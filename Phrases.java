@@ -1,5 +1,6 @@
 
 import javax.swing.JOptionPane;
+import static GUI.playingPhraseLabel;
 
 public class Phrases {
 
@@ -35,13 +36,18 @@ public class Phrases {
                 playingPhrase = String.valueOf(playingPhraseArray);
 
                 if (found) {
-                        JOptionPane.showMessageDialog(null, "Congratulations! You've guessed the phrase: " + gamePhrase
-                                        + "\n" + "You win a prize!");
 
                 } else if (!found) {
+                        if (GUI.isCheckBoxSelected) {
+                                GUI.textAreaForMessages
+                                                .append("Sorry, the letter '" + guess + "' is not in the phrase.\n");
+                        } else {
+                                GUI.textAreaForMessages
+                                                .setText("Sorry, the letter '" + guess + "' is not in the phrase.\n");
+                        }
 
-                        JOptionPane.showMessageDialog(null, "Sorry, the letter '" + guess + "' is not in the phrase.");
                 }
                 return found;
         }
+
 }

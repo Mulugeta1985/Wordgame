@@ -17,12 +17,19 @@ public class GUI extends JFrame {
         public static String gameText = "";
         public static boolean isCheckBoxSelected = false;
         public boolean onceGamePlay = false;
+        public static int phraseTotalCount = 0;
+        public static int correctGuessCount = 0;
+        public static JLabel playingPhraseLabel;
+        public ArrayList<String> guessArray = new ArrayList<String>();
+        String gamePhrase = "";
+        // Create the JTextArea
+        public static JTextArea textAreaForMessages = new JTextArea(10, 10); // 10 rows and 10 columns
 
         public GUI() {
                 JPanel contentPane = new JPanel();
                 setContentPane(contentPane);
                 setTitle("Simple Game Application");
-                setSize(400, 300);
+
                 setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 // Set Jframe in Center.......................................
                 Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
@@ -44,13 +51,14 @@ public class GUI extends JFrame {
                 JButton addHostButton = new JButton("Add Host");
 
                 // add(addHostButton);
-                JLabel playingPhraseLabel = new JLabel("Playing Phrase: _______________");
+                playingPhraseLabel = new JLabel("Playing Phrase: _______________");
                 playingPhraseLabel.setForeground(Color.white);
                 // add(playingPhraseLabel);
                 JButton startTurnButton = new JButton("Start Turns");
                 startTurnButton.addActionListener(e -> {
                         if (onceGamePlay == true) {
-                                String gamePhrase = JOptionPane.showInputDialog("Enter game phrase:");
+                                gamePhrase = JOptionPane.showInputDialog("Enter game phrase:");
+                                phraseTotalCount = gamePhrase.replaceAll("\\s", "").length();
                                 Phrases phrases = new Phrases(gamePhrase);
                                 playingPhraseLabel.setText("Playing Phrase: " + phrases.getPlayingPhrase());
                         }
@@ -62,18 +70,50 @@ public class GUI extends JFrame {
 
                                 try {
                                         correctGuess = Phrases.findLetters(guess);
+                                        if (correctGuess) {
+                                                setPhrase(gamePhrase, guess);
+                                                correctGuessCount = correctGuessCount
+                                                                + findNumberOfPresenceOfCharInString(gamePhrase,
+                                                                                guess.charAt(0));
+
+                                                if (correctGuessCount == phraseTotalCount) {
+                                                        if (isCheckBoxSelected) {
+                                                                textAreaForMessages.append(
+                                                                                "Congratulations! You've guessed Correctly All The character in word successully\n");
+                                                        } else {
+                                                                textAreaForMessages.setText(
+                                                                                "Congratulations! You've guessed Correctly All The character in word successully\n");
+                                                        }
+
+                                                } else if (correctGuessCount < phraseTotalCount) {
+                                                        correctGuess = false;
+                                                        if (isCheckBoxSelected) {
+                                                                textAreaForMessages.append(
+                                                                                "Congratulations! You've guessed Correct\n");
+                                                        } else {
+                                                                textAreaForMessages.setText(
+                                                                                "Congratulations! You've guessed Correct\n");
+                                                        }
+                                                        // JOptionPane.showMessageDialog(null, "Congratulations! You've
+                                                        // guessed correct Char from the phrase please guessed next");
+                                                }
+                                        }
+
                                 } catch (MultipleLettersException ex) {
                                         System.out.println(ex.getMessage());
                                 }
                                 if (correctGuess) {
+                                        guessArray.clear();
+                                        phraseTotalCount = 0;
+                                        correctGuessCount = 0;
                                         String playChoice = JOptionPane.showInputDialog("Continue playing? (Y/N): ");
                                         try {
                                                 if (!playChoice.equalsIgnoreCase("Y")) {
                                                         System.exit(0);
                                                 } else {
-
-                                                        String gamePhrase = JOptionPane
-                                                                        .showInputDialog("Enter game phrase:");
+                                                        textAreaForMessages.setText("");
+                                                        gamePhrase = JOptionPane.showInputDialog("Enter game phrase:");
+                                                        phraseTotalCount = gamePhrase.replaceAll("\\s", "").length();
                                                         Phrases phrases = new Phrases(gamePhrase);
                                                         playingPhraseLabel.setText("Playing Phrase: "
                                                                         + phrases.getPlayingPhrase());
@@ -108,22 +148,34 @@ public class GUI extends JFrame {
                         }
                 });
 
+                textAreaForMessages.setLineWrap(true); // Enable line wrapping
+                textAreaForMessages.setWrapStyleWord(true); // Wrap at word boundaries
+
+                // Set preferred size to control width and height
+                // textAreaForMessages.setPreferredSize(new java.awt.Dimension(300, 200)); //
+                // Width, Height
+                // Add JTextArea to a JScrollPane for scrolling
+                JScrollPane scrollPane = new JScrollPane(textAreaForMessages);
+
                 String description = "Save Message When Checked";
                 checkBox1.setToolTipText(description);
                 // add(startTurnButton);
-                JPanel panel = new JPanel(new GridLayout(5, 1)); // 2 rows, 3 columns
+                JPanel panel = new JPanel(new GridLayout(6, 1)); // 6 rows, 1 columns
                 panel.setBackground(Color.gray);
                 panel.add(checkBox1);
+
                 panel.add(playersLabel);
                 panel.add(hostLabel);
                 panel.add(startTurnButton);
                 panel.add(playingPhraseLabel);
+                panel.add(scrollPane);
 
                 add(panel);
 
                 addHostButton.addActionListener(e -> {
                         String hostName = JOptionPane.showInputDialog("Enter host name:");
-                        String gamePhrase = JOptionPane.showInputDialog("Enter game phrase:");
+                        gamePhrase = JOptionPane.showInputDialog("Enter game phrase:");
+                        phraseTotalCount = gamePhrase.replaceAll("\\s", "").length();
                         Phrases phrases = new Phrases(gamePhrase);
                         playingPhraseLabel.setText("Playing Phrase: " + phrases.getPlayingPhrase());
                         host = hostName;
@@ -169,7 +221,8 @@ public class GUI extends JFrame {
                         @Override
                         public void actionPerformed(ActionEvent e) {
                                 String hostName = JOptionPane.showInputDialog("Enter host name:");
-                                String gamePhrase = JOptionPane.showInputDialog("Enter game phrase:");
+                                gamePhrase = JOptionPane.showInputDialog("Enter game phrase:");
+                                phraseTotalCount = gamePhrase.replaceAll("\\s", "").length();
                                 Phrases phrases = new Phrases(gamePhrase);
                                 playingPhraseLabel.setText("Playing Phrase: " + phrases.getPlayingPhrase());
                                 host = hostName;
@@ -206,8 +259,50 @@ public class GUI extends JFrame {
                                 aboutMenu.doClick();
                         }
                 });
+                setSize(400, 390);
 
                 setVisible(true);
+        }
+
+        public void setPhrase(String phrase, String character) {
+                guessArray.add(character);
+                String gamePhrase = phrase; // Replace with your actual game phrase
+
+                // Create a StringBuilder to build the modified string
+                StringBuilder modifiedPhrase = new StringBuilder();
+
+                // Loop through each character in the original string
+                for (int i = 0; i < gamePhrase.length(); i++) {
+                        char currentChar = gamePhrase.charAt(i);
+                        String currentCharS = currentChar + "";
+
+                        // Check if the character is the one to exclude
+                        if (guessArray.contains(currentCharS)) {
+                                modifiedPhrase.append(currentChar);
+                        } else if (currentCharS.equals(" ")) {
+                                modifiedPhrase.append(" ");
+                        } else {
+                                modifiedPhrase.append("_");
+
+                        }
+                }
+
+                // Convert StringBuilder back to String
+                String phrases = modifiedPhrase.toString();
+                playingPhraseLabel.setText("Playing Phrase: " + phrases);
+        }
+
+        public int findNumberOfPresenceOfCharInString(String gamePhrase, char charToCount) {
+
+                int count = 0;
+
+                // Loop through each character in the string
+                for (int i = 0; i < gamePhrase.length(); i++) {
+                        if (gamePhrase.charAt(i) == charToCount) {
+                                count++;
+                        }
+                }
+                return count;
         }
 
         public static void main(String[] args) {

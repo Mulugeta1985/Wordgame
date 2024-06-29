@@ -1,9 +1,8 @@
-
 /**
  *
  * @author pc
  */
-public class WordGame {
+public class WordGame2 {
 
         /**
          * @param args the command line arguments
